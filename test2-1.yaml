@@ -1,0 +1,57 @@
+- name: Connecting to DC1 LTMs
+  hosts: dc1f5ltm01
+  connection: ssh
+  gather_facts: false
+  evironment:
+    F5_PASSWORD: "Labrat@123"
+    F5_USER: "admin"
+    F5_SERVER: "192.168.1.52"
+
+  tasks:
+  
+#   - name: Include vars of stuff.yml into the 'stuff' variable (2.2).
+#     include_vars:
+#      file: stuff.yml
+#      name: stuff
+
+   - name: Deleting virtual server
+     bigip_command:
+      commands:
+         - 'delete ltm virtual testvip-80'
+      validate_certs: "no"
+     delegate_to: localhost
+     register: result
+
+   - name: Deleting pool and nodes
+     bigip_command:
+      commands:
+         - 'delete ltm pool testpool-80'
+         - 'delete ltm node 1.1.1.2'
+         - 'delete ltm node 1.1.1.1'
+      validate_certs: "no"
+     delegate_to: localhost
+     register: result
+
+   - name: Post implementation testing
+     bigip_command:
+      commands:
+         - 'list ltm pool testpool-80 one-line'
+         - 'list ltm virtual testvip-80 one-line'
+      validate_certs: "no"
+     delegate_to: localhost
+     register: posttest
+   
+   - debug:
+      var: posttest.stdout
+     #local_action: copy content="{{ posttest.stdout }}" dest="/tmp/postest.txt"
+
+
+#      - name: Running pre test commands
+#        remote_user: root
+#        shell: "tmsh list ltm virtual one-line | grep site1"
+#        #shell: "tmsh list ltm pool one-line | grep site1" 
+#        register: pretest
+#
+#      - name: Saving LTM output to a file in /tmp/
+#        local_action: copy content=""{{ pretest.stdout }}"" dest="/tmp/pretest.txt"
+

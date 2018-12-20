@@ -1,0 +1,13 @@
+- name: Connecting to F5 LTMs
+  hosts: dc1f5ltm01
+  connection: ssh
+  gather_facts: no
+
+  tasks:
+      - name: Getting pool list from F5 LTM
+        shell: "tmsh show running-config ltm virtual one-line"
+        register: poollist
+
+      - name: Saving LTM output to a file
+        local_action: copy content="{{ poollist.stdout }}" dest="/tmp/pool.txt"
+

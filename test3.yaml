@@ -1,0 +1,42 @@
+- name: Connecting to DC1 LTMs
+  hosts: dc1f5ltm01
+  connection: ssh
+  gather_facts: false
+  vars_files:
+     - /home/shoaib/scripts/vars-test1.yml
+  environment:
+    F5_USER: "admin"
+    F5_PASSWORD: "Labrat@123"
+    F5_SERVER: "{{ LTM_IP }}"
+
+  template:
+     src: /home/shoaib/scripts/template-test1.j2
+
+  
+  tasks:
+  
+   - name: Saving LTM config
+     bigip_config:
+      save: yes
+      validate_certs: "no"
+     delegate_to: localhost
+     register: saveconfig
+   
+   - name: Pull config from template
+     bigip_command:
+      commands:
+         - "{{ node }}"
+      validate_certs: "no"
+     delegate_to: localhost
+     register: nodes
+
+   - name: Post implementation testing
+     bigip_command:
+      commands:
+         - 'list ltm node one-line | grep 1.1.1'
+      validate_certs: "no"
+     delegate_to: localhost
+     register: posttest
+   - debug:
+      var: posttest.stdout
+

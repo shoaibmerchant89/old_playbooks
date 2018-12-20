@@ -1,0 +1,81 @@
+- name: Connecting to DC1 LTMs
+  hosts: dc1f5ltm01
+  connection: ssh
+  gather_facts: false
+  vars_files:
+     - /home/shoaib/scripts/vars-test1.yaml
+  environment:
+    F5_USER: "admin"
+    F5_PASSWORD: "Labrat@123"
+    F5_SERVER: "{{ LTM_IP }}"
+
+#  template:
+#     src: /home/shoaib/scripts/template-test1.j2
+#
+  
+  tasks:
+  
+#   - name: Saving LTM config
+#     bigip_config:
+#      save: yes
+#      validate_certs: "no"
+#     delegate_to: localhost
+#     register: saveconfig
+#   
+#   - name: Syncing LTM config
+#     bigip_command:
+#      commands: "run /cm config-sync to-group Syncfailover"
+#      validate_certs: "no"
+#     delegate_to: localhost
+#     register: syncconfig
+
+   - name: Pushing realease plan
+     bigip_command:
+      commands:
+         - "{{ release_plan }}"
+      validate_certs: "no"
+     delegate_to: localhost
+     register: release_plan
+   - debug:
+      var: release_plan.stdout
+
+   - name: Post implementation testing
+     shell: |
+      tmsh show running-config ltm pool "{{ item }}" one-line
+#      tmsh show running-config ltm virtual "{{ item }}" one-line
+#     delegate_to: localhost
+     with_items:
+      - - testpool1-80
+        - testpool2-80
+        - testpool3-80
+        - testpool4-80
+     register: posttest.stdout
+
+   - name: Saving LTM output to a file
+     local_action: copy content="{{ posttest.stdout }}" dest=/tmp/"test.txt"
+     
+
+#   - name: Saving LTM config
+#     bigip_config:
+#      save: yes
+#      validate_certs: "no"
+#     delegate_to: localhost
+#     register: saveconfig
+#   
+#   - name: Syncing LTM config
+#     bigip_command:
+#      commands: "run /cm config-sync to-group Syncfailover"
+#      validate_certs: "no"
+#     delegate_to: localhost
+#     register: syncconfig
+#
+
+#      - name: Running pre test commands
+#        remote_user: root
+#        shell: "tmsh list ltm virtual one-line | grep site1"
+#        #shell: "tmsh list ltm pool one-line | grep site1" 
+#        register: pretest
+#
+#      - name: Saving LTM output to a file in /tmp/
+#        local_action: copy content=""{{ pretest.stdout }}"" dest="/tmp/pretest.txt"
+

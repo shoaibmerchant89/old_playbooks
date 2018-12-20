@@ -1,0 +1,27 @@
+- name: Connecting to DC1 LTMs
+  hosts: dc1f5ltm01
+  connection: ssh
+  gather_facts: false
+
+  tasks:
+      - name: push commands
+        bigip_command:
+          commands:
+               - show sys version
+          server: "192.168.1.52"
+          user: "admin"
+          password: "Labrat@123"
+#          provider: "{{ cli }}"
+#          register: result
+
+#        delegate_to: localhost
+
+#      - name: Running pre test commands
+#        remote_user: root
+#        shell: "tmsh list ltm virtual one-line | grep site1"
+#        #shell: "tmsh list ltm pool one-line | grep site1" 
+#        register: pretest
+#
+#      - name: Saving LTM output to a file in /tmp/
+#        local_action: copy content="{{ pretest.stdout }}" dest="/tmp/pretest.txt"
+
